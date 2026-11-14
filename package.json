@@ -8,7 +8,7 @@
   "engines": { "vscode": "^1.90.0" },
   "categories": ["Linters", "SCM Providers", "Testing", "Other"],
   "keywords": ["code review", "pull request", "pr", "git", "diff", "security", "secrets", "impact analysis", "pre-push", "tests"],
-  "icon": "media/icon.png",
+  "icon": "media/icon-128.png",
   "galleryBanner": { "color": "#0b1f33", "theme": "dark" },
   "repository": { "type": "git", "url": "https://github.com/your-account/shipcheck" },
   "bugs": { "url": "https://github.com/your-account/shipcheck/issues" },
