@@ -3,7 +3,7 @@
   "displayName": "ShipCheck — Pre-PR Code Review",
   "description": "Trust your code before you merge: impact map, Blocking/Warning/Suggestion review with exact lines, missing-test hints, PR description generator and a pre-push guard.",
   "version": "1.0.0",
-  "publisher": "your-publisher-id",
+  "publisher": "RadwanAlmsora",
   "license": "MIT",
   "engines": { "vscode": "^1.90.0" },
   "categories": ["Linters", "SCM Providers", "Testing", "Other"],
