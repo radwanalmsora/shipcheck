@@ -1,5 +1,5 @@
 {
-  "name": "shipcheck",
+  "name": "shipcheck-pr-review",
   "displayName": "ShipCheck — Pre-PR Code Review",
   "description": "Trust your code before you merge: impact map, Blocking/Warning/Suggestion review with exact lines, missing-test hints, PR description generator and a pre-push guard.",
   "version": "1.0.0",
