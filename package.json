@@ -1,0 +1,105 @@
+{
+  "name": "shipcheck",
+  "displayName": "ShipCheck — Pre-PR Code Review",
+  "description": "Trust your code before you merge: impact map, Blocking/Warning/Suggestion review with exact lines, missing-test hints, PR description generator and a pre-push guard.",
+  "version": "1.0.0",
+  "publisher": "your-publisher-id",
+  "license": "MIT",
+  "engines": { "vscode": "^1.90.0" },
+  "categories": ["Linters", "SCM Providers", "Testing", "Other"],
+  "keywords": ["code review", "pull request", "pr", "git", "diff", "security", "secrets", "impact analysis", "pre-push", "tests"],
+  "icon": "media/icon.png",
+  "galleryBanner": { "color": "#0b1f33", "theme": "dark" },
+  "repository": { "type": "git", "url": "https://github.com/your-account/shipcheck" },
+  "bugs": { "url": "https://github.com/your-account/shipcheck/issues" },
+  "homepage": "https://github.com/your-account/shipcheck#readme",
+  "main": "./extension.js",
+  "activationEvents": ["workspaceContains:.git"],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Running project checks and installing git hooks execute commands, so they are disabled in untrusted workspaces. Reviewing a diff is read-only and stays available.",
+      "restrictedConfigurations": ["shipcheck.checkCommands"]
+    },
+    "virtualWorkspaces": { "supported": false, "description": "ShipCheck needs a local git checkout." }
+  },
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [{ "id": "shipcheck", "title": "ShipCheck", "icon": "media/activity.svg" }]
+    },
+    "views": {
+      "shipcheck": [{ "id": "shipcheck.results", "name": "Review" }]
+    },
+    "viewsWelcome": [
+      {
+        "view": "shipcheck.results",
+        "contents": "Review your changes before you open a pull request.\n[Review branch changes](command:shipcheck.review)\n[Review staged changes only](command:shipcheck.reviewStaged)\nShipCheck compares your work with the base branch, maps what it affects, flags risks with exact lines and writes the PR description.",
+        "when": "!shipcheck.hasResults"
+      }
+    ],
+    "commands": [
+      { "command": "shipcheck.review", "title": "Review Changes (vs base branch)", "category": "ShipCheck", "icon": "$(refresh)" },
+      { "command": "shipcheck.reviewStaged", "title": "Review Staged Changes", "category": "ShipCheck" },
+      { "command": "shipcheck.reviewWorking", "title": "Review Uncommitted Changes", "category": "ShipCheck" },
+      { "command": "shipcheck.showReport", "title": "Open Report", "category": "ShipCheck", "icon": "$(output)" },
+      { "command": "shipcheck.generatePR", "title": "Generate PR Description", "category": "ShipCheck", "icon": "$(git-pull-request)" },
+      { "command": "shipcheck.copyPR", "title": "Copy PR Description", "category": "ShipCheck" },
+      { "command": "shipcheck.exportMarkdown", "title": "Export Review as Markdown", "category": "ShipCheck" },
+      { "command": "shipcheck.runChecks", "title": "Run Project Checks (lint / types / tests)", "category": "ShipCheck", "icon": "$(play)" },
+      { "command": "shipcheck.chooseBase", "title": "Choose Base Branch", "category": "ShipCheck" },
+      { "command": "shipcheck.installHook", "title": "Install Pre-Push Hook", "category": "ShipCheck" },
+      { "command": "shipcheck.uninstallHook", "title": "Remove Pre-Push Hook", "category": "ShipCheck" },
+      { "command": "shipcheck.aiReview", "title": "AI Second Opinion (uses your Copilot/LM model)", "category": "ShipCheck" },
+      { "command": "shipcheck.aiPR", "title": "Generate PR Description with AI", "category": "ShipCheck" },
+      { "command": "shipcheck.clear", "title": "Clear Results", "category": "ShipCheck", "icon": "$(clear-all)" },
+      { "command": "shipcheck.openSettings", "title": "Open Settings", "category": "ShipCheck", "icon": "$(gear)" }
+    ],
+    "menus": {
+      "view/title": [
+        { "command": "shipcheck.review", "when": "view == shipcheck.results", "group": "navigation@1" },
+        { "command": "shipcheck.showReport", "when": "view == shipcheck.results && shipcheck.hasResults", "group": "navigation@2" },
+        { "command": "shipcheck.generatePR", "when": "view == shipcheck.results && shipcheck.hasResults", "group": "navigation@3" },
+        { "command": "shipcheck.runChecks", "when": "view == shipcheck.results && shipcheck.hasResults", "group": "navigation@4" },
+        { "command": "shipcheck.clear", "when": "view == shipcheck.results && shipcheck.hasResults", "group": "9_more@1" },
+        { "command": "shipcheck.chooseBase", "when": "view == shipcheck.results", "group": "9_more@2" },
+        { "command": "shipcheck.reviewStaged", "when": "view == shipcheck.results", "group": "9_more@3" },
+        { "command": "shipcheck.installHook", "when": "view == shipcheck.results", "group": "9_more@4" },
+        { "command": "shipcheck.openSettings", "when": "view == shipcheck.results", "group": "9_more@5" }
+      ]
+    },
+    "configuration": {
+      "title": "ShipCheck",
+      "properties": {
+        "shipcheck.baseBranch": { "type": "string", "default": "", "scope": "resource", "markdownDescription": "Branch to compare against. Empty = auto-detect (`origin/HEAD`, `origin/main`, `origin/master`, `main`, `master`, `develop`)." },
+        "shipcheck.includeUncommitted": { "type": "boolean", "default": true, "scope": "resource", "description": "Include staged, unstaged changes in the branch review (so you can review before committing)." },
+        "shipcheck.includeUntracked": { "type": "boolean", "default": true, "scope": "resource", "description": "Include new files that are not tracked by git yet." },
+        "shipcheck.ignorePaths": {
+          "type": "array", "items": { "type": "string" }, "scope": "resource",
+          "default": ["**/node_modules/**", "**/dist/**", "**/build/**", "**/out/**", "**/coverage/**", "**/vendor/**", "**/*.min.*", "**/*.map", "**/*.snap", "**/*.lock", "**/package-lock.json", "**/yarn.lock", "**/pnpm-lock.yaml", "**/*.svg", "**/*.generated.*"],
+          "description": "Glob patterns excluded from line-level rules."
+        },
+        "shipcheck.disabledRules": { "type": "array", "items": { "type": "string" }, "default": [], "scope": "resource", "markdownDescription": "Rule IDs to turn off, e.g. `QUAL-TODO`, `SEC-WEAK-HASH`." },
+        "shipcheck.severityOverrides": { "type": "object", "default": {}, "scope": "resource", "markdownDescription": "Map of rule ID → `blocking` / `warning` / `suggestion` / `off`. Example: `{ \"SEC-EVAL\": \"blocking\" }`." },
+        "shipcheck.maxLineLength": { "type": "number", "default": 160, "scope": "resource", "description": "Lines longer than this are reported as a suggestion." },
+        "shipcheck.maxFileSizeKB": { "type": "number", "default": 1024, "scope": "resource", "description": "Files larger than this (KB) are flagged." },
+        "shipcheck.minAddedLinesForTestCheck": { "type": "number", "default": 8, "scope": "resource", "description": "Only check test coverage for source files with at least this many added lines." },
+        "shipcheck.customRules": {
+          "type": "array", "default": [], "scope": "resource",
+          "markdownDescription": "Project-specific regex rules applied to added lines. Example: `{ \"id\": \"no-moment\", \"pattern\": \"from 'moment'\", \"severity\": \"warning\", \"message\": \"Use date-fns\", \"files\": [\"src/**\"] }`.",
+          "items": {
+            "type": "object", "required": ["id", "pattern"],
+            "properties": {
+              "id": { "type": "string" }, "pattern": { "type": "string" }, "flags": { "type": "string" },
+              "severity": { "type": "string", "enum": ["blocking", "warning", "suggestion"] },
+              "message": { "type": "string" }, "why": { "type": "string" }, "fix": { "type": "string" },
+              "category": { "type": "string" }, "files": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        },
+        "shipcheck.checkCommands": { "type": "array", "items": { "type": "string" }, "default": [], "scope": "resource", "markdownDescription": "Commands run by **Run Project Checks**, e.g. `[\"npm run lint\", \"npm test\"]`. Empty = auto-detect from package.json / pytest / go / cargo. Only runs in trusted workspaces." },
+        "shipcheck.checkTimeoutSec": { "type": "number", "default": 600, "scope": "resource", "description": "Timeout per project check command (seconds)." },
+        "shipcheck.autoReviewOnSave": { "type": "boolean", "default": false, "scope": "resource", "description": "Re-run the review (quietly) a moment after you save a file, once a review exists." }
+      }
+    }
+  }
+}
